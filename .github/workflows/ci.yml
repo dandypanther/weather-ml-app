@@ -10,6 +10,9 @@ jobs:
   test:
     name: Install & Test
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: Weather-ML-CICD-Incomplete
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -48,7 +51,7 @@ jobs:
       - name: Build Docker image
         uses: docker/build-push-action@v6
         with:
-          context: .
+          context: ./Weather-ML-CICD-Incomplete
           file: ./Dockerfile
           load: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}:ci-test
