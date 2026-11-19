@@ -22,7 +22,7 @@ jobs:
 
       - name: Install Flask and dependancies
         run: |
-          python -m install --upgrade pip
+          python pip -m install --upgrade pip
           pip install flask -r requirments.txt pytest
 
       - name: Run unit tests
