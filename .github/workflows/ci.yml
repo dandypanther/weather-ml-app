@@ -29,13 +29,13 @@ jobs:
           pip install flask -r requirements.txt pytest
 
       - name: Run unit tests
-        run: pytest tests/unit_test.py -v
+        run: python -m pytest tests/unit_test.py -v
 
       - name: Run integration tests
-        run: pytest tests/integration_test.py -v
-
+        run: python -m pytest tests/integration_test.py -v
+      
       - name: Run smoke tests
-        run: pytest tests/smoke_test.py -v
+        run: python -m pytest tests/smoke_test.py -v
 
   build-and-push:
     name: Build, Test & Push Docker image
