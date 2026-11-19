@@ -1,0 +1,87 @@
+name: CI pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: Install & Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12.3'
+
+      - name: Install Flask and dependancies
+        run: |
+          python -m install --upgrade pip
+          pip install flask -r requirments.txt pytest
+
+      - name: Run unit tests
+        run: pytest unit_test.py -v
+
+      - name: Run integration tests
+        run: pytest integration_test.py -v
+
+      - name: Run smoke tests
+        run: pytest smoke_test.py -v
+
+  build-and-push:
+    name: Build, Test & Push Docker image
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          load: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}:ci-test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build a test - launch container and run a command on wait 
+        run: |
+          docker run -d --name build-test ${{ secrets.DOCKERHUB_USERNAME }}:ci-test
+          sleep 5
+          #containeer must still be running meaning it launched successfully
+          test "$(docker inspect -f '{{.State.Running}}' build-test)" = "true"
+          #run command inside the container
+          docker exec build-test python --version
+          docker logs build-test
+          
+      - name: Clean up test container
+        if: always()
+        run: docker rm -f build-test || true
+
+      - name: Login to Docker Hub
+        if: github.event_name == 'push' && github.ref == 'refs/head/main'
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      
+      - name: Push image to Docker Hub
+        if: github.event_name == 'push' && github.ref == 'refs/head/main'
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}:${{ github.sha }}
+            ${{ secrets.DOCKERHUB_USERNAME }}:latest
+          cache-from: type=gha
