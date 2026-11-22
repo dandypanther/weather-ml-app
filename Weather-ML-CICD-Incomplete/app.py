@@ -5,7 +5,8 @@ import time
 
 app = Flask(__name__)
 
-weather_classes = ['clear', 'cloudy', 'drizzly', 'foggy', 'hazey', 'misty', 'rainy', 'smokey', 'thunderstorm']
+#changed weather classes to now provide the correct result for foggy's prediction index
+weather_classes = ['clear', 'foggy', 'drizzly', 'cloudy', 'hazey', 'misty', 'rainy', 'smokey', 'thunderstorm']
 
 def load_model(model_path = 'model/model.pkl'):
 	return pickle.load(open(model_path, 'rb'))
@@ -14,7 +15,6 @@ def classify_weather(features):
 	model = load_model()
 	start = time.time()
 	prediction_index = model.predict(features)[0]
-	print("prediction index:", prediction_index)
 	latency = round((time.time() - start) * 1000, 2) #we are here
 	prediction = weather_classes[prediction_index] # modified the code so that it no longer is fixed to cloudy and now is the prediction
 
