@@ -52,7 +52,6 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: ./Weather-ML-CICD-Incomplete
-          file: ./Dockerfile
           load: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}:ci-test
           cache-from: type=gha
