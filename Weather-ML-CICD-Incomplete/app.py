@@ -6,7 +6,7 @@ import time
 app = Flask(__name__)
 
 #changed weather classes to now provide the correct result for foggy's prediction index
-weather_classes = ['clear', 'foggy', 'drizzly', 'cloudy', 'hazey', 'misty', 'rain', 'smokey', 'thunderstorm']
+weather_classes = ['clear', 'foggy', 'drizzly', 'cloudy', 'hazey', 'misty', 'rainy', 'smokey', 'thunderstorm']
 
 def load_model(model_path = 'model/model.pkl'):
 	return pickle.load(open(model_path, 'rb'))
