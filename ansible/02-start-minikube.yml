@@ -1,0 +1,14 @@
+---
+- name: Start Minikube
+  hosts: localhost
+  connection: local
+  tasks:
+    - name: Check whether Minikube is running
+      ansible.builtin.command: minikube status
+      register: minikube_status
+      failed_when: false
+      changed_when: false
+
+    - name: Start Minikube
+      ansible.builtin.command: minikube start --driver=docker
+      when: minikube_status.rc != 0

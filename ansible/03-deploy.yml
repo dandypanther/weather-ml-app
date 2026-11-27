@@ -1,0 +1,68 @@
+---
+- name: Deploy the app to Kubernetes
+  hosts: localhost
+  connection: local
+  vars:
+    app_name: weather-ml-app
+    image: dandypanther/weather-ml-app:latest
+    container_port: 5000
+    replicas: 3
+  tasks:
+    - name: Create the Deployment
+      kubernetes.core.k8s:
+        state: present
+        namespace: default
+        definition:
+          apiVersion: apps/v1
+          kind: Deployment
+          metadata:
+            name: "{{ app_name }}"
+          spec:
+            replicas: "{{ replicas }}"
+            selector:
+              matchLabels:
+                app: "{{ app_name }}"
+            strategy:
+              type: RollingUpdate
+              rollingUpdate:
+                maxSurge: 1
+                maxUnavailable: 0
+            template:
+              metadata:
+                labels:
+                  app: "{{ app_name }}"
+              spec:
+                containers:
+                  - name: "{{ app_name }}"
+                    image: "{{ image }}"
+                    ports:
+                      - containerPort: "{{ container_port }}"
+                    readinessProbe:
+                      tcpSocket:
+                        port: "{{ container_port }}"
+                      initialDelaySeconds: 5
+                      periodSeconds: 5
+                    resources:
+                      requests:
+                        cpu: 100m
+                        memory: 256Mi
+                      limits:
+                        memory: 512Mi
+
+    - name: Create the Service
+      kubernetes.core.k8s:
+        state: present
+        namespace: default
+        definition:
+          apiVersion: v1
+          kind: Service
+          metadata:
+            name: "{{ app_name }}"
+          spec:
+            type: NodePort
+            selector:
+              app: "{{ app_name }}"
+            ports:
+              - port: 80
+                targetPort: "{{ container_port }}"
+                nodePort: 30080
