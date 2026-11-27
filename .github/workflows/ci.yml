@@ -5,9 +5,7 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
-env:
-  IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/weather-ml-app
-
+    
 jobs:
   test:
     name: Install & Test
@@ -87,6 +85,6 @@ jobs:
           context: ./Weather-ML-CICD-Incomplete
           push: true
           tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}:${{ github.sha }}
-            ${{ secrets.DOCKERHUB_USERNAME }}:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/weather-ml-app:${{ github.sha }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/weather-ml-app:latest
           cache-from: type=gha
