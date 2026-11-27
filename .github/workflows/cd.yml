@@ -1,0 +1,36 @@
+name: CD
+
+on:
+  workflow_run:
+    workflows: ["CI pipeline"]
+    types: [completed]
+    branches: [main]
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy to Kubernetes
+    if: >
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push'
+    runs-on: self-hosted
+    env:
+      IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/weather-ml-app:${{ github.event.workflow_run.head_sha }}
+    steps:
+      - name: Checkout the tested commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+      - name: Deploy with Ansible
+        run: ansible-playbook ansible/03-deploy.yml -e image=$IMAGE
+
+      - name: Wait for the rolling update to finish
+        run: kubectl rollout status deployment/weather-ml-app --timeout=180s
+
+      - name: Roll back on failure
+        if: failure()
+        run: kubectl rollout undo deployment/weather-ml-app
