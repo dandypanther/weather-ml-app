@@ -1,0 +1,22 @@
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: weather-ml
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: weather-ml
+  template:
+    metadata:
+      labels:
+        app: weather-ml
+    spec:
+      containers:
+        - name: weather-ml
+          image: dandypanther/weather-ml-app:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 5000
+

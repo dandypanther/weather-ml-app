@@ -1,0 +1,58 @@
+
+- name: A playbook to install Docker on a VM
+  hosts: localhost
+  user: ubuntu
+  become: yes
+
+  tasks:
+    - name: 1. Update APT Package Manager
+      apt:
+        update_cache: yes
+
+    - name: 2. Install dependency packages
+      apt:
+        name: "{{ item }}"
+      with_items:
+        - ca-certificates
+        - curl
+        - gnupg
+        - software-properties-common
+
+    - name: 3. Create Docker keyring directory
+      file:
+        path: /etc/apt/keyrings
+        state: directory
+        mode: '0755'
+
+    - name: 4. Get APT Key
+      shell:
+        cmd: curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+
+    - name: 5. Change key permissions
+      file:
+        path: /etc/apt/keyrings/docker.asc
+        mode: '0644'
+
+    - name: 6. Add APT Repository
+      apt_repository:
+        repo: "deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu {{ ansible_facts['distribution_release'] }} stable"
+        state: present
+        filename: docker
+
+    - name: 7. Update Package Manager
+      apt:
+        update_cache: yes
+
+    - name: 8. Install Docker packages
+      apt:
+        name: "{{ item }}"
+      with_items:
+        - docker-ce
+        - docker-ce-cli
+        - containerd.io
+
+    - name: 9. Add ubuntu to Docker group
+      user:
+        name: ubuntu
+        groups: docker
+        append: yes

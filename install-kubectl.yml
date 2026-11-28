@@ -1,0 +1,24 @@
+
+- name: A playbook to install Kubectl on a VM
+  hosts: localhost
+  user: ubuntu
+  become: yes
+
+  tasks:
+    - name: 1. Update APT Package Manager
+      apt:
+        update_cache: yes
+
+    - name: 2. Install dependency packages
+      apt:
+        name: "{{ item }}"
+      with_items:
+        - apt-transport-https
+        - ca-certificates
+        - curl
+        - gpg
+
+    - name: 3. Install Kubectl
+      shell:
+        cmd: snap install kubectl --classic
+

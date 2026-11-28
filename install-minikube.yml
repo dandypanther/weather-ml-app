@@ -1,0 +1,14 @@
+
+- name: A playbook to install Minikube on a VM
+  hosts: localhost
+  user: ubuntu
+  become: yes
+
+  tasks:
+    - name: 1. Download Minikube
+      shell:
+        cmd: curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+
+    - name: 2. Install Minikube
+      shell:
+        cmd: install minikube-linux-amd64 /usr/local/bin/minikube
